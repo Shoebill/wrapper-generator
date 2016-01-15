@@ -36,15 +36,19 @@ class Parameter(cidl.Parameter):
   @property
   def java_type(self):
     try:
-      if self.is_out:
+      if self.is_ref:
         return JAVA_TYPES_OUT[self.type]
       else:
         return JAVA_TYPES_IN[self.type]
     except KeyError:
-      if self.is_out:
+      if self.is_ref:
         return '%s *' % self.type
       else:
         return self.type
+
+  @property
+  def is_ref(self):
+    return self.is_out or self.type == 'string'
 
 
 def generateJavaFunctions(filename, idl):
@@ -121,7 +125,7 @@ def generateJavaConstants(filename, idl):
     result = "public class Constants {\n\n"
 
     for constant in idl.constants:
-        result += "\tpublic static final " + JAVA_TYPES_IN[constant.type] + " " + constant.name + " = " + str(constant.value) + ";\n"
+        result += "\tpublic static final " + JAVA_TYPES_IN[constant.type] + " " + constant.name + " = " + str(constant.value.data) + ";\n"
 
     result += "\n}"
 

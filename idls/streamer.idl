@@ -1,0 +1,221 @@
+//CONSTANTS:
+
+const int STREAMER_TYPE_OBJECT = 0;
+const int STREAMER_TYPE_PICKUP = 1;
+const int STREAMER_TYPE_CP = 2;
+const int STREAMER_TYPE_RACE_CP = 3;
+const int STREAMER_TYPE_MAP_ICON = 4;
+const int STREAMER_TYPE_3D_TEXT_LABEL = 5;
+const int STREAMER_TYPE_AREA = 6;
+
+const int STREAMER_AREA_TYPE_CIRCLE = 0;
+const int STREAMER_AREA_TYPE_CYLINDER = 1;
+const int STREAMER_AREA_TYPE_SPHERE = 2;
+const int STREAMER_AREA_TYPE_RECTANGLE = 3;
+const int STREAMER_AREA_TYPE_CUBOID = 4;
+const int STREAMER_AREA_TYPE_POLYGON = 5;
+
+const int STREAMER_OBJECT_TYPE_GLOBAL = 0;
+const int STREAMER_OBJECT_TYPE_PLAYER = 1;
+const int STREAMER_OBJECT_TYPE_DYNAMIC = 2;
+
+const int INVALID_STREAMER_ID = 0;
+
+const float STREAMER_OBJECT_SD = 300.0;
+const float STREAMER_OBJECT_DD = 0.0;
+const float STREAMER_PICKUP_SD = 200.0;
+const float STREAMER_CP_SD = 200.0;
+const float STREAMER_RACE_CP_SD = 200.0;
+const float STREAMER_MAP_ICON_SD = 200.0;
+const float STREAMER_3D_TEXT_LABEL_SD = 200.0;
+
+//CALLBACKS:
+
+[callback] int OnDynamicObjectMoved(int objectid);
+[callback] int OnPlayerEditDynamicObject(int playerid, int objectid, int response, float x, float y, float z, float rx, float ry, float rz);
+[callback] int OnPlayerSelectDynamicObject(int playerid, int objectid, int modelid, float x, float y, float z);
+[callback] int OnPlayerShootDynamicObject(int playerid, int weaponid, int objectid, float x, float y, float z);
+[callback] int OnPlayerPickUpDynamicPickup(int playerid, int pickupid);
+[callback] int OnPlayerEnterDynamicCP(int playerid, int checkpointid);
+[callback] int OnPlayerLeaveDynamicCP(int playerid, int checkpointid);
+[callback] int OnPlayerEnterDynamicRaceCP(int playerid, int checkpointid);
+[callback] int OnPlayerLeaveDynamicRaceCP(int playerid, int checkpointid);
+[callback] int OnPlayerEnterDynamicArea(int playerid, int areaid);
+[callback] int OnPlayerLeaveDynamicArea(int playerid, int areaid);
+[callback] int Streamer_OnPluginError(string error);
+
+//NATIVES:
+
+	//DEPRECATED
+	[native] int Streamer_TickRate(int rate);
+	[native] int Streamer_MaxItems(int type, int items);
+	[native] int Streamer_VisibleItems(int type, int items, int playerid);
+	[native] int Streamer_CellDistance(float distance);
+	[native] int Streamer_CellSize(float size);
+
+	[native] int DestroyAllDynamicObjects();
+	[native] int CountDynamicObjects();
+	[native] int DestroyAllDynamicPickups();
+	[native] int CountDynamicPickups();
+	[native] int DestroyAllDynamicCPs();
+	[native] int CountDynamicCPs();
+	[native] int DestroyAllDynamicRaceCPs();
+	[native] int CountDynamicRaceCPs();
+	[native] int DestroyAllDynamicMapIcons();
+	[native] int CountDynamicMapIcons();
+	[native] int DestroyAllDynamic3DTextLabels();
+	[native] int CountDynamic3DTextLabels();
+	[native] int DestroyAllDynamicAreas();
+	[native] int CountDynamicAreas();
+
+// Natives (Settings)
+
+[native] int Streamer_GetTickRate();
+[native] int Streamer_SetTickRate(int rate);
+[native] int Streamer_GetMaxItems(int type);
+[native] int Streamer_SetMaxItems(int type, int items);
+[native] int Streamer_GetVisibleItems(int type, int playerid);
+[native] int Streamer_SetVisibleItems(int type, int items, int playerid);
+[native] int Streamer_GetRadiusMultiplier(int type, [out] float multiplier, int playerid);
+[native] int Streamer_SetRadiusMultiplier(int type, float multiplier, int playerid);
+[native] int Streamer_GetCellDistance([out] float distance);
+[native] int Streamer_SetCellDistance(float distance);
+[native] int Streamer_GetCellSize([out] float size);
+[native] int Streamer_SetCellSize(float size);
+[native] int Streamer_ToggleErrorCallback(int toggle);
+[native] int Streamer_IsToggleErrorCallback();
+
+// Natives (Updates)
+
+[native] int Streamer_ProcessActiveItems();
+[native] int Streamer_ToggleIdleUpdate(int playerid, int toggle);
+[native] int Streamer_IsToggleIdleUpdate(int playerid);
+[native] int Streamer_ToggleCameraUpdate(int playerid, int toggle);
+[native] int Streamer_IsToggleCameraUpdate(int playerid);
+[native] int Streamer_ToggleItemUpdate(int playerid, int type, int toggle);
+[native] int Streamer_IsToggleItemUpdate(int playerid, int type);
+[native] int Streamer_Update(int playerid, int type);
+[native] int Streamer_UpdateEx(int playerid, float x, float y, float z, int worldid, int interiorid, int type);
+
+// Natives (Data Manipulation)
+
+[native] int Streamer_GetFloatData(int type, int id, int data, [out] float result);
+[native] int Streamer_SetFloatData(int type, int id, int data, float value);
+[native] int Streamer_GetIntData(int type, int id, int data);
+[native] int Streamer_SetIntData(int type, int id, int data, int value);
+[native] int Streamer_GetArrayData(int type, int id, int data, string dest, int maxdest);
+[native] int Streamer_SetArrayData(int type, int id, int data, string src, int maxsrc);
+[native] int Streamer_IsInArrayData(int type, int id, int data, int value);
+[native] int Streamer_AppendArrayData(int type, int id, int data, int value);
+[native] int Streamer_RemoveArrayData(int type, int id, int data, int value);
+[native] int Streamer_GetUpperBound(int type);
+
+// Natives (Miscellaneous)
+
+[native] int Streamer_GetDistanceToItem(float x, float y, float z, int type, int id, [out] float distance, int dimensions);
+[native] int Streamer_ToggleStaticItem(int type, int id, int toggle);
+[native] int Streamer_IsToggleStaticItem(int type, int id);
+[native] int Streamer_GetItemInternalID(int playerid, int type, int streamerid);
+[native] int Streamer_GetItemStreamerID(int playerid, int type, int internalid);
+[native] int Streamer_IsItemVisible(int playerid, int type, int id);
+[native] int Streamer_DestroyAllVisibleItems(int playerid, int type, int serverwide);
+[native] int Streamer_CountVisibleItems(int playerid, int type, int serverwide);
+[native] int Streamer_DestroyAllItems(int type, int serverwide);
+[native] int Streamer_CountItems(int type, int serverwide);
+
+// Natives (Objects)
+
+[native] int CreateDynamicObject(int modelid, float x, float y, float z, float rx, float ry, float rz, int worldid, int interiorid, int playerid, float streamdistance, float drawdistance);
+[native] int DestroyDynamicObject(int objectid);
+[native] int IsValidDynamicObject(int objectid);
+[native] int SetDynamicObjectPos(int objectid, float x, float y, float z);
+[native] int GetDynamicObjectPos(int objectid, [out] float x, [out] float y, [out] float z);
+[native] int SetDynamicObjectRot(int objectid, float rx, float ry, float rz);
+[native] int GetDynamicObjectRot(int objectid, [out] float rx, [out] float ry, [out] float rz);
+[native] int SetDynamicObjectNoCameraCol(int objectid);
+[native] int GetDynamicObjectNoCameraCol(int objectid);
+[native] int MoveDynamicObject(int objectid, float x, float y, float z, float speed, float rx, float ry, float rz);
+[native] int StopDynamicObject(int objectid);
+[native] int IsDynamicObjectMoving(int objectid);
+[native] int AttachCameraToDynamicObject(int playerid, int objectid);
+[native] int AttachDynamicObjectToObject(int objectid, int attachtoid, float offsetx, float offsety, float offsetz, float rx, float ry, float rz, int syncrotation);
+[native] int AttachDynamicObjectToPlayer(int objectid, int playerid, float offsetx, float offsety, float offsetz, float rx, float ry, float rz);
+[native] int AttachDynamicObjectToVehicle(int objectid, int vehicleid, float offsetx, float offsety, float offsetz, float rx, float ry, float rz);
+[native] int EditDynamicObject(int playerid, int objectid);
+[native] int IsDynamicObjectMaterialUsed(int objectid, int materialindex);
+[native] int GetDynamicObjectMaterial(int objectid, int materialindex, [out] int modelid, string txdname, string texturename, [out] int materialcolor, int maxtxdname, int maxtexturename);
+[native] int SetDynamicObjectMaterial(int objectid, int materialindex, int modelid, string txdname, string texturename, int materialcolor);
+[native] int IsDynamicObjectMaterialTextUsed(int objectid, int materialindex);
+[native] int GetDynamicObjectMaterialText(int objectid, int materialindex, string text, [out] int materialsize, string fontface, [out] int fontsize, [out] int bold, [out] int fontcolor, [out] int backcolor, [out] int textalignment, int maxtext, int maxfontface);
+[native] int SetDynamicObjectMaterialText(int objectid, int materialindex, string text, int materialsize, string fontface, int fontsize, int bold, int fontcolor, int backcolor, int textalignment);
+
+// Natives (Pickups)
+
+[native] int CreateDynamicPickup(int modelid, int type, float x, float y, float z, int worldid, int interiorid, int playerid, float streamdistance);
+[native] int DestroyDynamicPickup(int pickupid);
+[native] int IsValidDynamicPickup(int pickupid);
+
+// Natives (Checkpoints)
+
+[native] int CreateDynamicCP(float x, float y, float z, float size, int worldid, int interiorid, int playerid, float streamdistance);
+[native] int DestroyDynamicCP(int checkpointid);
+[native] int IsValidDynamicCP(int checkpointid);
+[native] int TogglePlayerDynamicCP(int playerid, int checkpointid, int toggle);
+[native] int TogglePlayerAllDynamicCPs(int playerid, int toggle);
+[native] int IsPlayerInDynamicCP(int playerid, int checkpointid);
+[native] int GetPlayerVisibleDynamicCP(int playerid);
+
+// Natives (Race Checkpoints)
+
+[native] int CreateDynamicRaceCP(int type, float x, float y, float z, float nextx, float nexty, float nextz, float size, int worldid, int interiorid, int playerid, float streamdistance);
+[native] int DestroyDynamicRaceCP(int checkpointid);
+[native] int IsValidDynamicRaceCP(int checkpointid);
+[native] int TogglePlayerDynamicRaceCP(int playerid, int checkpointid, int toggle);
+[native] int TogglePlayerAllDynamicRaceCPs(int playerid, int toggle);
+[native] int IsPlayerInDynamicRaceCP(int playerid, int checkpointid);
+[native] int GetPlayerVisibleDynamicRaceCP(int playerid);
+
+// Natives (Map Icons)
+
+[native] int CreateDynamicMapIcon(float x, float y, float z, int type, int color, int worldid, int interiorid, int playerid, float streamdistance, int style);
+[native] int DestroyDynamicMapIcon(int iconid);
+[native] int IsValidDynamicMapIcon(int iconid);
+
+// Natives (3D Text Labels)
+
+[native] int CreateDynamic3DTextLabel(string text, int color, float x, float y, float z, float drawdistance, int attachedplayer, int attachedvehicle, int testlos, int worldid, int interiorid, int playerid, float streamdistance);
+[native] int DestroyDynamic3DTextLabel(int id);
+[native] int IsValidDynamic3DTextLabel(int id);
+[native] int GetDynamic3DTextLabelText(int id, string text, int maxtext);
+[native] int UpdateDynamic3DTextLabelText(int id, int color, string text);
+
+// Natives (Areas)
+
+[native] int CreateDynamicCircle(float x, float y, float size, int worldid, int interiorid, int playerid);
+[native] int CreateDynamicCylinder(float x, float y, float minz, float maxz, float size, int worldid, int interiorid, int playerid);
+[native] int CreateDynamicSphere(float x, float y, float z, float size, int worldid, int interiorid, int playerid);
+[native] int CreateDynamicRectangle(float minx, float miny, float maxx, float maxy, int worldid, int interiorid, int playerid);
+[native] int CreateDynamicCuboid(float minx, float miny, float minz, float maxx, float maxy, float maxz, int worldid, int interiorid, int playerid);
+[native] int CreateDynamicCube(float minx, float miny, float minz, float maxx, float maxy, float maxz, int worldid, int interiorid, int playerid);
+	//[native] int CreateDynamicPolygon(float points[], float minz = -FLOAT_INFINITY, float maxz = FLOAT_INFINITY, maxpoints = sizeof points, worldid, interiorid, playerid);
+[native] int DestroyDynamicArea(int areaid);
+[native] int IsValidDynamicArea(int areaid);
+	//[native] int GetDynamicPolygonPoints(areaid, float points[], maxpoints = sizeof points);
+[native] int GetDynamicPolygonNumberPoints(int areaid);
+[native] int TogglePlayerDynamicArea(int playerid, int areaid, int toggle);
+[native] int TogglePlayerAllDynamicAreas(int playerid, int toggle);
+[native] int IsPlayerInDynamicArea(int playerid, int areaid, int recheck);
+[native] int IsPlayerInAnyDynamicArea(int playerid, int recheck);
+[native] int IsAnyPlayerInDynamicArea(int areaid, int recheck);
+[native] int IsAnyPlayerInAnyDynamicArea(int recheck);
+	//[native] int GetPlayerDynamicAreas(int playerid, areas[], maxareas = sizeof areas);
+[native] int GetPlayerNumberDynamicAreas(int playerid);
+[native] int IsPointInDynamicArea(int areaid, float x, float y, float z);
+[native] int IsPointInAnyDynamicArea(float x, float y, float z);
+	//[native] int GetDynamicAreasForPoint(float x, float y, float z, areas[], maxareas = sizeof areas);
+[native] int GetNumberDynamicAreasForPoint(float x, float y, float z);
+[native] int AttachDynamicAreaToObject(int areaid, int objectid, int type, int playerid, float offsetx, float offsety, float offsetz);
+[native] int AttachDynamicAreaToPlayer(int areaid, int playerid, float offsetx, float offsety, float offsetz);
+[native] int AttachDynamicAreaToVehicle(int areaid, int vehicleid, float offsetx, float offsety, float offsetz);
+
+//TODO: Add extended Natives
