@@ -48,7 +48,7 @@ class Parameter(cidl.Parameter):
 
   @property
   def is_ref(self):
-    return self.is_out or self.type == 'string'
+    return self.is_out or self.type == 'constString'
 
 
 def generateJavaFunctions(filename, idl):
