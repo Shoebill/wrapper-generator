@@ -4,8 +4,8 @@ import re
 import sys
 
 FILE_NAME = ""
-REGEX_NATIVE = "^native (.*?)\:?([a-zA-Z_]*)\(([a-zA-Z&,:\[\] ]*)\)$"
-REGEX_CALLBACK = "^forward ([a-zA-Z_]*)\(([a-zA-Z,_: ]*)\)$"
+REGEX_NATIVE = "^native (.*?)\:?([a-zA-Z_0-9]*)\(([a-zA-Z&,:\[\] ]*)\)$"
+REGEX_CALLBACK = "^forward ([a-zA-Z_0-9]*)\(([a-zA-Z,_: ]*)\)$"
 REGEX_DEFINITION = "^#define ([a-zA-Z_]*) * \(?(.*?)\)?$"
 REGEX_PARAMETER = "^([a-zA-Z&]*)\:?(.*)$"
 JAVA_PYTHON_TYPE_MAP = {"Int": "int", "String": "String", "Float": "float", "bool": "boolean"}
@@ -103,12 +103,16 @@ def parseNative(line):
         if returntype == "":
             returntype = "Int"
         name = result.group(2)
-        paramParts = [x for x in string.split(result.group(3), ',')]
-        parameters = []
-        for param in paramParts:
-            parameters.append(parseParameter(param.strip()))
-        native = Native(name, parameters, returntype)
-        return native
+        parameterSection = result.group(3)
+        if parameterSection != "":
+            paramParts = [x for x in string.split(parameterSection, ',')]
+            parameters = []
+            for param in paramParts:
+                parameters.append(parseParameter(param.strip()))
+            native = Native(name, parameters, returntype)
+            return native
+        else:
+            return Native(name, [], returntype)
     return None
 
 def parseCallback(line):
@@ -137,6 +141,8 @@ def parseDefinition(line):
 
 def parseFile(content):
     lines = string.split(content, '\n')
+    for index,line in enumerate(lines):
+        lines[index] = line.strip()
     lines[:] = [x for x in lines if x.startswith("native") or x.startswith("forward") or x.startswith("#define")]
     natives = []
     callbacks = []
@@ -161,6 +167,7 @@ def parseFile(content):
     return
 
 def generateJavaNativeFile(filename, natives):
+
     result = "import net.gtaun.shoebill.amx.AmxCallable;\n" \
              "import net.gtaun.shoebill.amx.AmxInstance;\n" \
              "import java.util.HashMap;\n" \
