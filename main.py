@@ -10,6 +10,7 @@ REGEX_DEFINITION = "^#define ([a-zA-Z_]*) * \(?(.*?)\)?$"
 REGEX_PARAMETER = "^([a-zA-Z&]*)\:?(.*)$"
 JAVA_PYTHON_TYPE_MAP = {"Int": "int", "String": "String", "Float": "float", "bool": "boolean"}
 JAVA_PYTHON_C_TYPES = {"Int": "i", "String": "s", "Float" : "f"}
+JAVA_PYTHON_NATIVE_RETURN_MAP = {"Int": "ReturnType.INTEGER", "Float": "ReturnType.FLOAT", "String": "ReturnType.STRING"}
 
 def getJavaType(parameter):
     if parameter.isReference == False:
@@ -165,33 +166,15 @@ def generateJavaNativeFile(filename, natives):
              "import java.util.HashMap;\n" \
              "import net.gtaun.shoebill.amx.types.*;\n\n" \
              "public class Functions {\n" \
-             "\n" \
-             "\tprivate static String[] functionList = new String[]{\n"
-
-    count = 0
-
-    for index,native in enumerate(natives):
-        if count == 0:
-            result += "\t\t"
-        result += "\"" + native.name + "\""
-        if index + 1 == len(natives):
-            result += "\n\t};\n\n"
-            break
-        if count < 3:
-            result += ", "
-        else:
-            result += ",\n\t\t"
-            count = 0
-        count += 1
+             "\n"
 
     result += "\tprivate static HashMap<String, AmxCallable> functions = new HashMap<>();\n\n" \
-              "\tpublic static void registerFunctions(AmxInstance instance) {\n" \
-              "\t\tfor(String function : functionList) {\n" \
-              "\t\t\tAmxCallable callable = instance.getNative(function);\n" \
-              "\t\t\tif(callable != null) functions.put(function, callable);\n" \
-              "\t\t\telse System.out.println(\"Function \" + function + \" has not been found.\");\n" \
-              "\t\t}\n" \
-              "\t}\n\n"
+              "\tpublic static void registerFunctions(AmxInstance instance) {\n"
+
+    for index,native in enumerate(natives):
+        result += "\t\tfunctions.put(\"" + native.name + "\", instance.getNative(\"" + native.name + "\", " + JAVA_PYTHON_NATIVE_RETURN_MAP[native.returntype] + "));\n"
+        if index + 1 == len(natives):
+            result += "\t}\n\n"
 
     for index,native in enumerate(natives):
         result += "\tpublic static " + JAVA_PYTHON_TYPE_MAP[native.returntype] + " " + native.name + "("
