@@ -4,7 +4,7 @@ import re
 import sys
 
 FILE_NAME = ""
-REGEX_NATIVE = "^native ([a-zA-Z_]*)\(([a-zA-Z&,:\[\] ]*)\)$"
+REGEX_NATIVE = "^native (.*?)\:?([a-zA-Z_]*)\(([a-zA-Z&,:\[\] ]*)\)$"
 REGEX_CALLBACK = "^forward ([a-zA-Z_]*)\(([a-zA-Z,_: ]*)\)$"
 REGEX_DEFINITION = "^#define ([a-zA-Z_]*) * \(?(.*?)\)?$"
 REGEX_PARAMETER = "^([a-zA-Z&]*)\:?(.*)$"
@@ -34,9 +34,10 @@ class Parameter:
 
 class Native:
 
-    def __init__(self, name, parameters):
+    def __init__(self, name, parameters, returntype):
         self.name = name
         self.parameters = parameters
+        self.returntype = returntype
 
     def __str__(self):
 
@@ -97,12 +98,15 @@ def parseParameter(parameter):
 def parseNative(line):
     result = re.match(REGEX_NATIVE, line)
     if result:
-        name = result.group(1)
-        paramParts = [x for x in string.split(result.group(2), ',')]
+        returntype = result.group(1)
+        if returntype == "":
+            returntype = "Int"
+        name = result.group(2)
+        paramParts = [x for x in string.split(result.group(3), ',')]
         parameters = []
         for param in paramParts:
             parameters.append(parseParameter(param.strip()))
-        native = Native(name, parameters)
+        native = Native(name, parameters, returntype)
         return native
     return None
 
@@ -190,14 +194,14 @@ def generateJavaNativeFile(filename, natives):
               "\t}\n\n"
 
     for index,native in enumerate(natives):
-        result += "\tpublic static int " + native.name + "("
+        result += "\tpublic static " + JAVA_PYTHON_TYPE_MAP[native.returntype] + " " + native.name + "("
         for paramIndex,param in enumerate(native.parameters):
             result += getJavaType(param) + " " + param.name
             if paramIndex + 1 < len(native.parameters):
                 result += ", "
             else:
                 result += ") {\n"
-        result += "\t\treturn (int) functions.get(\"" + native.name + "\").call("
+        result += "\t\treturn (" + JAVA_PYTHON_TYPE_MAP[native.returntype] + ") functions.get(\"" + native.name + "\").call("
         for paramIndex,param in enumerate(native.parameters):
             result += param.name
             if paramIndex + 1 < len(native.parameters):
