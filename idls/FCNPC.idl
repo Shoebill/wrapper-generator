@@ -1,0 +1,116 @@
+//CONSTANTS:
+
+const int MOVE_TYPE_WALK        = 0;
+const int MOVE_TYPE_RUN         = 1;
+const int MOVE_TYPE_SPRINT      = 2;
+const int MOVE_TYPE_DRIVE       = 3;
+
+const int MAX_NODES             = 64;
+
+const int NODE_TYPE_NONE        = -1;
+const int NODE_TYPE_PED         = 0;
+const int NODE_TYPE_VEHICLE     = 1;
+const int NODE_TYPE_BOAT        = 2;
+
+//FUNCTIONS:
+
+[native] int FCNPC_SetUpdateRate(int rate);
+[native] int FCNPC_InitZMap(string file);
+
+[native] int FCNPC_Create(string name);
+[native] int FCNPC_Destroy(int npcid);
+[native] int FCNPC_Spawn(int npcid, int skinid, float X, float Y, float Z);
+[native] int FCNPC_Respawn(int npcid);
+[native] int FCNPC_IsSpawned(int npcid);
+[native] int FCNPC_Kill(int npcid);
+[native] int FCNPC_IsDead(int npcid);
+
+[native] int FCNPC_SetPosition(int npcid, float X, float Y, float Z);
+[native] int FCNPC_GetPosition(int npcid, [out] float X, [out] float Y, [out] float Z);
+[native] int FCNPC_SetAngle(int npcid, float Angle);
+[native] float FCNPC_GetAngle(int npcid);
+[native] int FCNPC_SetQuaternion(int npcid, float X, float Y, float Z, float A);
+[native] int FCNPC_GetQuaternion(int npcid, [out] float X, [out] float Y, [out] float Z, [out] float A);
+[native] int FCNPC_SetVelocity(int npcid, float X, float Y, float Z);
+[native] int FCNPC_GetVelocity(int npcid, [out] float X, [out] float Y, [out] float Z);
+[native] int FCNPC_SetInterior(int npcid, int interiorid);
+[native] int FCNPC_GetInterior(int npcid);
+
+[native] int FCNPC_SetHealth(int npcid, float health);
+[native] float FCNPC_GetHealth(int npcid);
+[native] int FCNPC_SetArmour(int npcid, float armour);
+[native] float FCNPC_GetArmour(int npcid);
+
+[native] int FCNPC_SetSkin(int npcid, int skinid);
+[native] int FCNPC_GetSkin(int npcid);
+
+[native] int FCNPC_SetWeapon(int npcid, int weaponid);
+[native] int FCNPC_GetWeapon(int npcid);
+[native] int FCNPC_SetAmmo(int npcid, int ammo);
+[native] int FCNPC_GetAmmo(int npcid);
+
+[native] int FCNPC_SetKeys(int npcid, int Keys);
+[native] int FCNPC_GetKeys(int npcid, [out] int UDAnalog, [out] int LRAnalog, [out] int Keys);
+
+[native] int FCNPC_SetSpecialAction(int npcid, int actionid);
+[native] int FCNPC_GetSpecialAction(int npcid);
+
+[native] int FCNPC_ToggleReloading(int npcid, bool toggle);
+[native] int FCNPC_ToggleInfiniteAmmo(int npcid, bool toggle);
+
+[native] int FCNPC_GoTo(int npcid, float X, float Y, float Z, int type, float speed, int UseZMap);
+[native] int FCNPC_Stop(int npcid);
+[native] int FCNPC_IsMoving(int npcid);
+
+[native] int FCNPC_AimAt(int npcid, float X, float Y, float Z, int shoot);
+[native] int FCNPC_StopAim(int npcid);
+[native] int FCNPC_MeleeAttack(int npcid, int delay);
+[native] int FCNPC_StopAttack(int npcid);
+[native] int FCNPC_IsAiming(int npcid);
+[native] int FCNPC_IsShooting(int npcid);
+[native] int FCNPC_IsReloading(int npcid);
+
+[native] int FCNPC_EnterVehicle(int npcid, int vehicleid, int seatid, int type);
+[native] int FCNPC_ExitVehicle(int npcid);
+
+[native] int FCNPC_PutInVehicle(int npcid, int vehicleid, int seatid);
+[native] int FCNPC_RemoveFromVehicle(int npcid);
+[native] int FCNPC_GetVehicleID(int npcid);
+[native] int FCNPC_GetVehicleSeat(int npcid);
+
+[native] int FCNPC_StartPlayingPlayback(int npcid, string file);
+[native] int FCNPC_StopPlayingPlayback(int npcid);
+[native] int FCNPC_PausePlayingPlayback(int npcid);
+[native] int FCNPC_ResumePlayingPlayback(int npcid);
+
+[native] int FCNPC_OpenNode(int nodeid);
+[native] int FCNPC_CloseNode(int nodeid);
+[native] int FCNPC_IsNodeOpen(int nodeid);
+[native] int FCNPC_GetNodeType(int nodeid);
+[native] int FCNPC_SetNodePoint(int nodeid, int point);
+[native] int FCNPC_GetNodePointPosition(int nodeid, [out] float X, [out] float Y, [out] float Z);
+[native] int FCNPC_GetNodePointCount(int nodeid);
+[native] int FCNPC_GetNodeInfo(int nodeid, [out] int vehnodes, [out] int pednodes, [out] int navinode);
+[native] int FCNPC_PlayNode(int npcid, int nodeid, int type);
+[native] int FCNPC_StopPlayingNode(int npcid);
+
+[native] int FCNPC_GetZGround(float x, float y, [out] float z);
+
+//CALLBACKS:
+
+[callback] int FCNPC_OnCreate(int npcid);
+[callback] int FCNPC_OnSpawn(int npcid);
+[callback] int FCNPC_OnRespawn(int npcid);
+[callback] int FCNPC_OnDeath(int npcid, int killerid, int weaponid);
+
+[callback] int FCNPC_OnVehicleEntryComplete(int npcid, int vehicleid, int seat);
+[callback] int FCNPC_OnVehicleExitComplete(int npcid);
+
+[callback] int FCNPC_OnReachDestination(int npcid);
+[callback] int FCNPC_OnFinishPlayback(int npcid);
+
+[callback] int FCNPC_OnTakeDamage(int npcid, int damagerid, int weaponid, int bodypart, float health_loss);
+
+[callback] int FCNPC_OnFinishNodePoint(int npcid, int point);
+[callback] int FCNPC_OnChangeNode(int playerid, int nodeid);
+[callback] int FCNPC_OnFinishNode(int npcid);

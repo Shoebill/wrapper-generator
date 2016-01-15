@@ -1,277 +1,155 @@
-import os.path
-import string
-import re
+import cidl
 import sys
+import os.path
+
+JAVA_TYPES_IN = {
+  'int'    : 'int',
+  'bool'   : 'boolean',
+  'float'  : 'float',
+  'string' : 'String',
+}
+
+JAVA_TYPES_OUT = {
+  'int'    : 'ReferenceInt',
+  'float'  : 'ReferenceFloat',
+  'string' : 'ReferenceString',
+}
+
+JAVA_API_RETURNTYPES = {
+    'int' : 'ReturnType.INTEGER',
+    'float' : 'ReturnType.FLOAT',
+    'string' : 'ReturnType.STRING'
+}
+
+C_SHORT_FORMS = {
+    'int' : 'i',
+    'float' : 'f',
+    'string' : 's'
+}
 
 FILE_NAME = ""
-REGEX_NATIVE = "^native (.*?)\:?([a-zA-Z_0-9]*)\(([a-zA-Z&,:\[\] ]*)\)$"
-REGEX_CALLBACK = "^forward ([a-zA-Z_0-9]*)\(([a-zA-Z,_: ]*)\)$"
-REGEX_DEFINITION = "^#define ([a-zA-Z_]*) * \(?(.*?)\)?$"
-REGEX_PARAMETER = "^([a-zA-Z&]*)\:?(.*)$"
-JAVA_PYTHON_TYPE_MAP = {"Int": "int", "String": "String", "Float": "float", "bool": "boolean"}
-JAVA_PYTHON_C_TYPES = {"Int": "i", "String": "s", "Float" : "f"}
-JAVA_PYTHON_NATIVE_RETURN_MAP = {"Int": "ReturnType.INTEGER", "Float": "ReturnType.FLOAT", "String": "ReturnType.STRING"}
 
-def getJavaType(parameter):
-    if parameter.isReference == False:
-        return JAVA_PYTHON_TYPE_MAP[parameter.type]
-    else:
-        JAVA_PYTHON_REFERENCE_TYPE_MAP = {"Int": "ReferenceInt", "Float": "ReferenceFloat", "String": "ReferenceString"}
-        return JAVA_PYTHON_REFERENCE_TYPE_MAP[parameter.type]
+class Parameter(cidl.Parameter):
+  def __init__(self, type, name, default=None, attrlist=None):
+    cidl.Parameter.__init__(self, type, name, default, attrlist)
 
-class Parameter:
+  @property
+  def java_type(self):
+    try:
+      if self.is_out:
+        return JAVA_TYPES_OUT[self.type]
+      else:
+        return JAVA_TYPES_IN[self.type]
+    except KeyError:
+      if self.is_out:
+        return '%s *' % self.type
+      else:
+        return self.type
 
-    def __init__(self, name, type, isReference):
-        self.name = name
-        self.type = type
-        self.isReference = isReference
 
-    def __str__(self):
-        result = ""
-        if self.isReference:
-            result += "&"
-        result += self.type + ":" + self.name
-        return result
+def generateJavaFunctions(filename, idl):
 
-class Native:
-
-    def __init__(self, name, parameters, returntype):
-        self.name = name
-        self.parameters = parameters
-        self.returntype = returntype
-
-    def __str__(self):
-
-        parameterString = ""
-        for index,param in enumerate(self.parameters):
-            parameterString += str(param)
-            if index + 1 < len(self.parameters):
-                parameterString += ", "
-
-        return "Native: " + self.name + "(" + parameterString + ")"
-        
-class Callback:
-
-    def __init__(self, name, parameters):
-        self.name = name
-        self.parameters = parameters
-
-    def __str__(self):
-        parameterString = ""
-        for index,param in enumerate(self.parameters):
-            parameterString += str(param)
-            if index + 1 < len(self.parameters):
-                parameterString += ", "
-        return "Callback: " + self.name + "(" + parameterString + ")"
-        
-class Definition:
-
-    def __init__(self, name, value, type):
-        self.name = name
-        self.value = value
-        self.type = type
-
-    def __str__(self):
-        return "Definition: " + self.name + " " + self.value + " (" + self.type + ")"
-    
-def parseParameter(parameter):
-    result = re.match(REGEX_PARAMETER, parameter)
-    if result:
-        paramType = result.group(1)
-        paramName = result.group(2)
-        if len(paramName) > 0:
-            isRef = False
-            if paramType.startswith("&"):
-                paramType = paramType[1:]
-                isRef = True
-            if paramName == "[]":
-                paramName = paramType
-                paramType = "String"
-            return Parameter(paramName, paramType, isRef)
-        else:
-            isRef = False
-            if paramType.startswith("&"):
-                paramType = paramType[1:]
-                isRef = True
-            return Parameter(paramType, "Int", isRef)
-    return
-
-def parseNative(line):
-    result = re.match(REGEX_NATIVE, line)
-    if result:
-        returntype = result.group(1)
-        if returntype == "":
-            returntype = "Int"
-        name = result.group(2)
-        parameterSection = result.group(3)
-        if parameterSection != "":
-            paramParts = [x for x in string.split(parameterSection, ',')]
-            parameters = []
-            for param in paramParts:
-                parameters.append(parseParameter(param.strip()))
-            native = Native(name, parameters, returntype)
-            return native
-        else:
-            return Native(name, [], returntype)
-    return None
-
-def parseCallback(line):
-    result = re.match(REGEX_CALLBACK, line)
-    if result:
-        name = result.group(1)
-        paramParts = [x for x in string.split(result.group(2), ',')]
-        parameters = []
-        for param in paramParts:
-            parameters.append(parseParameter(param.strip()))
-        callback = Callback(name, parameters)
-        return callback
-    return None
-
-def parseDefinition(line):
-    result = re.match(REGEX_DEFINITION, line)
-    if result:
-        name = result.group(1)
-        value = result.group(2)
-        type = "String"
-        if is_number(value) == True:
-            type = "Int"
-        definition = Definition(name, value, type)
-        return definition
-    return None
-
-def parseFile(content):
-    lines = string.split(content, '\n')
-    for index,line in enumerate(lines):
-        lines[index] = line.strip()
-    lines[:] = [x for x in lines if x.startswith("native") or x.startswith("forward") or x.startswith("#define")]
-    natives = []
-    callbacks = []
-    definitions = []
-    for index,line in enumerate(lines):
-        if line.endswith(";"):
-            lines[index] = line[:-1]
-            native = parseNative(lines[index])
-            if native is not None:
-                natives.append(native)
-            callback = parseCallback(lines[index])
-            if callback is not None:
-                callbacks.append(callback)
-        definition = parseDefinition(lines[index])
-        if definition is not None:
-            definitions.append(definition)
-    generateJavaNativeFile("Functions.java", natives)
-    generateJavaDefinitionFile("Definitions.java", definitions)
-    generateJavaCallbackFile("Callbacks.java", callbacks)
-
-    print("All files has been generated. " + str(len(natives)) + " native function(s), " + str(len(callbacks)) + " callback(s) and " + str(len(definitions)) + " definition(s) have been exported.")
-    return
-
-def generateJavaNativeFile(filename, natives):
+    validFunctions = [x for x in idl.functions if x.has_attr("native")]
 
     result = "import net.gtaun.shoebill.amx.AmxCallable;\n" \
              "import net.gtaun.shoebill.amx.AmxInstance;\n" \
              "import java.util.HashMap;\n" \
              "import net.gtaun.shoebill.amx.types.*;\n\n" \
-             "public class Functions {\n" \
-             "\n"
+             "public class Functions {\n\n" \
+             "\tprivate static HashMap<String, AmxCallable> functions = new HashMap<>();\n\n" \
+             "\tpublic static void registerFunctions(AmxInstance instance) {\n"
 
-    result += "\tprivate static HashMap<String, AmxCallable> functions = new HashMap<>();\n\n" \
-              "\tpublic static void registerFunctions(AmxInstance instance) {\n"
+    for function in validFunctions:
+        result += "\t\tfunctions.put(\"" + function.name + "\", instance.getNative(\"" + function.name + "\", " + JAVA_API_RETURNTYPES[function.type] + "));\n"
 
-    for index,native in enumerate(natives):
-        result += "\t\tfunctions.put(\"" + native.name + "\", instance.getNative(\"" + native.name + "\", " + JAVA_PYTHON_NATIVE_RETURN_MAP[native.returntype] + "));\n"
-        if index + 1 == len(natives):
-            result += "\t}\n\n"
+    result += "\t}\n\n"
 
-    for index,native in enumerate(natives):
-        result += "\tpublic static " + JAVA_PYTHON_TYPE_MAP[native.returntype] + " " + native.name + "("
-        for paramIndex,param in enumerate(native.parameters):
-            result += getJavaType(param) + " " + param.name
-            if paramIndex + 1 < len(native.parameters):
+    for function in validFunctions:
+        result += "\tpublic static " + JAVA_TYPES_IN[function.type] + " " + function.name + "("
+        if function.params:
+            for index,parameter in enumerate(function.params):
+                result += parameter.java_type +  " " + parameter.name
+                if index + 1 < len(function.params):
+                    result += ", "
+        result += ") {\n" \
+                  "\t\treturn (" + function.type + ") functions.get(\"" + function.name + "\").call("
+        for index,parameter in enumerate(function.params):
+            result += parameter.name
+            if index + 1 < len(function.params):
                 result += ", "
-            else:
-                result += ") {\n"
-        result += "\t\treturn (" + JAVA_PYTHON_TYPE_MAP[native.returntype] + ") functions.get(\"" + native.name + "\").call("
-        for paramIndex,param in enumerate(native.parameters):
-            result += param.name
-            if paramIndex + 1 < len(native.parameters):
-                result += ", "
-            else:
-                result += ");\n"
-        result += "\t}\n\n"
+        result += ");\n\t}\n\n"
+
     result += "}"
 
-    with open(filename, "w") as file:
+    with open(filename, 'w') as file:
         file.write(result)
     return
 
-def generateJavaCallbackFile(filename, callbacks):
+def generateJavaCallbacks(filename, idl):
+    validCallbacks = [x for x in idl.functions if x.has_attr("callback")]
+
     result = "import net.gtaun.shoebill.amx.AmxInstanceManager;\n\n" \
              "public class Callbacks {\n\n" \
-             "\tpublic static void registerHandlers(AmxInstanceManager instanceManager) {\n\n"
+             "\tpublic static void registerHandlers(AmxInstanceManager instanceManager) {\n"
 
-    for index,callback in enumerate(callbacks):
-        result += "\t\tinstanceManager.hookCallback(\"" + callback.name + "\", amxCallEvent -> {\n"
-        for paramIndex,parameter in enumerate(callback.parameters):
-            javaType = getJavaType(parameter)
-            result += "\t\t\t" + javaType + " " + parameter.name + " = (" + javaType + ") amxCallEvent.getParameters()[" + str(paramIndex) + "];\n"
-            if paramIndex + 1 == len(callback.parameters):
-                result += "\t\t\t//TODO: Add your event logic for " + callback.name + " here\n" \
-                          "\t\t}, \""
+    for index,function in enumerate(validCallbacks):
+        result += "\t\tinstanceManager.hookCallback(\"" + function.name + "\", amxCallEvent -> {\n"
+        if function.params:
+            for paramIndex,parameter in enumerate(function.params):
+                result += "\t\t\t" + parameter.java_type + " " + parameter.name + " = (" + parameter.java_type + ") amxCallEvent.getParameters()[" + str(paramIndex) + "];\n"
 
-        for paramIndex,parameter in enumerate(callback.parameters):
-            cType = JAVA_PYTHON_C_TYPES[parameter.type]
-            result += cType
+            result += "\t\t\t//TODO: Add your event logic for " + function.name + " here\n" \
+                        "\t\t}, \""
+
+        for paramIndex,parameter in enumerate(function.params):
+            result += C_SHORT_FORMS[parameter.type]
 
         result += "\");\n\n"
 
-    result += "\t}\n\n" \
-              "\tpublic static void unregisterHandlers(AmxInstanceManager instanceManager) {\n"
+    result += "\t}\n\n\tpublic static void unregisterHandlers(AmxInstanceManager instanceManager) {\n"
 
-    for index,callback in enumerate(callbacks):
-        result += "\t\tinstanceManager.unhookCallback(\"" + callback.name + "\");\n"
+    for function in validCallbacks:
+        result += "\t\tinstanceManager.unhookCallback(\"" + function.name + "\");\n"
 
     result += "\t}\n}"
-
-    with open(filename, "w") as file:
+    with open(filename, 'w') as file:
         file.write(result)
+
     return
 
-def generateJavaDefinitionFile(filename, definitions):
-    result = "public class Definitions {\n\n"
+def generateJavaConstants(filename, idl):
+    result = "public class Constants {\n\n"
 
-    for index,definition in enumerate(definitions):
-        result += "\tpublic static final " + JAVA_PYTHON_TYPE_MAP[definition.type] + " " + definition.name + " = "
-        if definition.type == "String":
-            result += "\"" + definition.value + "\""
-        else:
-            result += definition.value
-        result += ";\n"
+    for constant in idl.constants:
+        result += "\tpublic static final " + JAVA_TYPES_IN[constant.type] + " " + constant.name + " = " + str(constant.value) + ";\n"
 
     result += "\n}"
 
-    with open(filename, "w") as file:
+    with open(filename, 'w') as file:
         file.write(result)
     return
 
-def is_number(s):
-    try:
-        int(s)
-        return True
-    except ValueError:
-        return False
-
-def loadFile():
-    with open(FILE_NAME) as f:
-        return f.read()
-
-def doesIncludeExists():
+def doesFileExists():
     return os.path.exists(FILE_NAME)
 
-def main():
+def startParsing():
+    try:
+        idlparser = cidl.Parser(param_class=Parameter)
+        idl = idlparser.parse(open(FILE_NAME, 'r').read())
 
+        generateJavaFunctions("Functions.java", idl)
+        generateJavaCallbacks("Callbacks.java", idl)
+        generateJavaConstants("Constants.java", idl)
+
+        print("Parsing process has been finished successfully. " + str(len(idl.functions)) + " functions / callbacks and " + str(len(idl.constants)) + " constants parsed.")
+
+    except cidl.Error as e:
+        print(e)
+    return
+
+def main():
     if len(sys.argv) < 2 or len(sys.argv) > 2:
-        print("Unknown count of arguments detected. Please only give 1 argument (the .inc file)")
+        print("Unknown count of arguments detected. Please only give 1 argument (the .idl file)")
         return
 
     global __location__
@@ -282,15 +160,19 @@ def main():
     print("******************************************")
     print("* Shoebill functions & callbacks parser  *")
     print("* Author: Marvin Haschker (123marvin123) *")
+    print("* Credits to: Zeex                       *")
     print("******************************************")
-    includePresent = doesIncludeExists()
-    print("Checking whether the " + FILE_NAME + " file is present... " + str(includePresent))
-    if includePresent == False:
+
+    fileExists = doesFileExists()
+    print("Checking whether the " + FILE_NAME + " file is present... " + str(fileExists))
+    if fileExists == False:
         print("\033[91mERROR:\033[0m The " + FILE_NAME + " file does not exists. Exiting...")
         return
     else:
         print("The " + FILE_NAME + " file has been found. Loading and parsing file...")
-        parseFile(loadFile())
+        startParsing()
+
+    return
 
 if __name__ == "__main__":
     main()
