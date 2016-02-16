@@ -128,6 +128,8 @@ def generateJavaConstants(filename, idl):
         result += "\tpublic static final " + JAVA_TYPES_IN[constant.type] + " " + constant.name + " = " + str(constant.value.data)
         if constant.type == "float":
             result += "f;"
+        else:
+            result += ";"
         result += "\n"
 
     result += "\n}"
