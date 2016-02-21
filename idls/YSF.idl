@@ -1,0 +1,324 @@
+//CONSTANTS:
+
+const int CONN_VARFLAG_DEBUG = 1;
+const int CONN_VARFLAG_READONLY = 2;
+const int CONN_VARFLAG_RULE = 3;
+const int CONN_VARFLAG_UNREMOVABLE = 4;
+
+const int BS_BOOL = 0;
+const int BS_CHAR = 1;
+const int BS_UNSIGNEDCHAR = 2;
+const int BS_SHORT = 3;
+const int BS_UNSIGNEDSHORT = 4;
+const int BS_INT = 5;
+const int BS_UNSIGNEDINT = 6;
+const int BS_FLOAT = 7;
+const int BS_STRING = 8;
+
+//NATIVES:
+
+// Gamemode restart time
+[native] int SetModeRestartTime(float time);
+[native] float GetModeRestartTime();
+
+// Max player/npc change at runtime
+[native] int SetMaxPlayers(int maxplayers);
+[native] int SetMaxNPCs(int maxnpcs);
+
+// Filterscript functions
+[native] int LoadFilterScript(string scriptname); // difference between "rcon loadfs": Return -> True if success, false if not
+[native] int UnLoadFilterScript(string scriptname); // ^
+[native] int GetFilterScriptCount();
+[native] int GetFilterScriptName(int id, string name, int len);
+
+// Server rule modifications
+[native] int AddServerRule(string name, string value, int flags);
+[native] int SetServerRule(string name, string value);
+[native] int IsValidServerRule(string name);
+[native] int SetServerRuleFlags(string name, int flags);
+[native] int GetServerRuleFlags(string name);
+// Just for backward compatibility...
+[native] int ModifyFlag(string name, int flags);
+
+// Server settings
+[native] int GetServerSettings([out] int showplayermarkes, [out] int shownametags, [out] int stuntbonus, [out] int useplayerpedanims, [out] int bLimitchatradius, [out] int disableinteriorenterexits, [out] int nametaglos, [out] int manualvehicleengine, [out] int limitplayermarkers, [out] int vehiclefriendlyfire, [out] int defaultcameracollision, [out] float fGlobalchatradius, [out] float fNameTagDrawDistance, [out] float fPlayermarkerslimit);
+
+// YSF settings
+[native] int YSF_SetTickRate(int ticks);
+[native] int YSF_GetTickRate();
+[native] int YSF_EnableNightVisionFix(int enable);
+[native] int YSF_IsNightVisionFixEnabled();
+ 
+// Nickname
+[native] int IsValidNickName(string name);
+[native] int AllowNickNameCharacter(int character, bool allow);
+[native] int IsNickNameCharacterAllowed(int character);
+
+// Classes
+[native] int GetAvailableClasses();
+[native] int GetPlayerClass(int classid, [out] int teamid, [out] int modelid, [out] float spawn_x, [out] float spawn_y, [out] float spawn_z, [out] float z_angle, [out] int weapon1, [out] int weapon1_ammo, [out] int weapon2, [out] int weapon2_ammo, [out] int weapon3, [out] int weapon3_ammo);
+[native] int EditPlayerClass(int classid, int teamid, int modelid, float spawn_x, float spawn_y, float spawn_z, float z_angle, int weapon1, int weapon1_ammo, int weapon2, int weapon2_ammo, int weapon3, int weapon3_ammo);
+
+// Timers
+[native] int GetRunningTimers();
+
+// Per player things
+[native] int SetPlayerGravity(int playerid, float gravity);
+[native] float GetPlayerGravity(int playerid);
+[native] int SetPlayerAdmin(int playerid, bool admin); // Set player as RCON admin
+[native] int SetPlayerTeamForPlayer(int playerid, int teamplayerid, int teamid);
+[native] int GetPlayerTeamForPlayer(int playerid, int teamplayerid);
+[native] int SetPlayerSkinForPlayer(int playerid, int skinplayerid, int skin);
+[native] int GetPlayerSkinForPlayer(int playerid, int skinplayerid);
+[native] int SetPlayerNameForPlayer(int playerid, int nameplayerid, string playername);
+[native] int GetPlayerNameForPlayer(int playerid, int nameplayerid, [out] string playername, int size);
+[native] int SetPlayerFightStyleForPlayer(int playerid, int styleplayerid, int style);
+[native] int GetPlayerFightStyleForPlayer(int playerid, int skinplayerid);
+[native] int SetPlayerPosForPlayer(int playerid, int posplayerid, float fX, float fY, float fZ, bool forcesync);
+[native] int SetPlayerRotationQuatForPlayer(int playerid, int quatplayerid, float w, float x, float y, float z, bool forcesync);
+[native] int ApplyAnimationForPlayer(int playerid, int animplayerid, string animlib, string animname, float fDelta, int loop, int lockx, int locky, int freeze, int time); // DOESN'T WORK
+[native] int GetPlayerWeather(int playerid);
+[native] int TogglePlayerWidescreen(int playerid, bool set);
+[native] int IsPlayerWidescreenToggled(int playerid);
+[native] int GetSpawnInfo(int playerid, [out] int teamid, [out] int modelid, [out] float spawn_x, [out] float spawn_y, [out] float spawn_z, [out] float z_angle, [out] int weapon1, [out] int weapon1_ammo, [out] int weapon2, [out] int weapon2_ammo, [out] int weapon3, [out] int weapon3_ammo);
+[native] int GetPlayerSkillLevel(int playerid, int skill);
+[native] int IsPlayerCheckpointActive(int playerid);
+[native] int GetPlayerCheckpoint(int playerid, [out] float fX, [out] float fY, [out] float fZ, [out] float fSize);
+[native] int IsPlayerRaceCheckpointActive(int playerid);
+[native] int GetPlayerRaceCheckpoint(int playerid, [out] float fX, [out] float fY, [out] float fZ, [out] float fNextX, [out] float fNextY, [out] float NextZ, [out] float fSize);
+[native] int GetPlayerWorldBounds(int playerid, [out] float x_max, [out] float x_min, [out] float y_max, [out] float y_min);
+[native] int IsPlayerInModShop(int playerid);
+[native] int GetPlayerSirenState(int playerid);
+[native] int GetPlayerLandingGearState(int playerid);
+[native] int GetPlayerHydraReactorAngle(int playerid);
+[native] float GetPlayerTrainSpeed(int playerid);
+[native] float GetPlayerZAim(int playerid);
+[native] int GetPlayerSurfingOffsets(int playerid, [out] float fOffsetX, [out] float fOffsetY, [out] float fOffsetZ);
+[native] int GetPlayerRotationQuat(int playerid, [out] float w, [out] float x, [out] float y, [out] float z);
+[native] int GetPlayerSpectateID(int playerid);
+[native] int GetPlayerSpectateType(int playerid);
+[native] int GetPlayerLastSyncedVehicleID(int playerid);
+[native] int GetPlayerLastSyncedTrailerID(int playerid);
+
+[native] int SendBulletData(int sender, int hitid, int hittype, int weaponid, float fHitOriginX, float fHitOriginY, float fHitOriginZ, float fHitTargetX, float fHitTargetY, float fHitTargetZ, float fCenterOfHitX, float fCenterOfHitY, float fCenterOfHitZ, int forplayerid);
+[native] int ShowPlayerForPlayer(int forplayerid, int playerid);
+[native] int HidePlayerForPlayer(int forplayerid, int playerid);
+[native] int SetPlayerChatBubbleForPlayer(int forplayerid, int playerid, string text, int color, float drawdistance, int expiretime);
+[native] int SetPlayerVersion(int playerid, string version);
+[native] int IsPlayerSpawned(int playerid);
+[native] int IsPlayerControllable(int playerid);
+[native] int SpawnForWorld(int playerid);
+[native] int BroadcastDeath(int playerid);
+[native] int IsPlayerCameraTargetEnabled(int playerid);
+[native] int SetPlayerDisabledKeysSync(int playerid, int keys);
+[native] int GetPlayerDisabledKeysSync(int playerid);
+
+// Actors
+[native] int GetActorSpawnInfo(int actorid, [out] int skinid, [out] float fX, [out] float fY, [out] float fZ, [out] float fAngle);
+[native] int GetActorSkin(int actorid);
+
+// Scoreboard manipulation
+[native] int TogglePlayerScoresPingsUpdate(int playerid, bool toggle);
+[native] int TogglePlayerFakePing(int playerid, bool toggle);
+[native] int SetPlayerFakePing(int playerid, int ping);
+
+[native] int TogglePlayerOnPlayerList(int playerid, bool toggle);
+[native] int IsPlayerToggledOnPlayerList(int playerid);
+
+// Pause functions
+[native] int IsPlayerPaused(int playerid);
+[native] int GetPlayerPausedTime(int playerid);
+
+// Objects get - global
+[native] float GetObjectDrawDistance(int objectid);
+[native] int SetObjectMoveSpeed(int objectid, float fSpeed);
+[native] float GetObjectMoveSpeed(int objectid);
+[native] int GetObjectTarget(int objectid, [out] float fX, [out] float fY, [out] float fZ);
+[native] int GetObjectAttachedData(int objectid, [out] int attached_vehicleid, [out] int attached_objectid, [out] int attached_playerid);
+[native] int GetObjectAttachedOffset(int objectid, [out] float fX, [out] float fY, [out] float fZ, [out] float fRotX, [out] float fRotY, [out] float fRotZ);
+[native] int IsObjectMaterialSlotUsed(int objectid, int materialindex); // Return values: 1 = material, 2 = material text 
+[native] int GetObjectMaterial(int objectid, int materialindex, [out] int modelid, [out] string txdname, int txdnamelen, [out] string texturename, int texturenamelen, [out] int materialcoor);
+[native] int GetObjectMaterialText(int objectid, int materialindex, [out] string text, int textlen, [out] int materialsize, [out] string fontface, int fontfacelen, [out] int fontsize, [out] int bold, [out] int fontcolor, [out] int backcolor, [out] int textalignment);
+[native] int IsObjectNoCameraCol(int objectid);
+
+// Objects get - player
+[native] float GetPlayerObjectDrawDistance(int playerid, int objectid);
+[native] int SetPlayerObjectMoveSpeed(int playerid, int objectid, float fSpeed);
+[native] float GetPlayerObjectMoveSpeed(int playerid, int objectid); 
+[native] float GetPlayerObjectTarget(int playerid, int objectid, [out] float fX, [out] float fY, [out] float fZ);
+[native] int GetPlayerObjectAttachedData(int playerid, int objectid, [out] int attached_vehicleid, [out] int attached_objectid, [out] int attached_playerid);
+[native] int GetPlayerObjectAttachedOffset(int playerid, int objectid, [out] float fX, [out] float fY, [out] float fZ, [out] float fRotX, [out] float fRotY, [out] float fRotZ);
+[native] int IsPlayerObjectMaterialSlotUsed(int playerid, int objectid, int materialindex); // Return values: 1 = material, 2 = material text
+[native] int GetPlayerObjectMaterial(int playerid, int objectid, int materialindex, [out] int modelid, [out] string txdname, int txdnamelen, [out] string texturename, int texturenamelen, [out] int materialcolor);
+[native] int GetPlayerObjectMaterialText(int playerid, int objectid, int materialindex, [out] string text, int textlen, [out] int materialsize, [out] string fontface, int fontfacelen, [out] int fontsize, [out] int bold, [out] int fontcolor, [out] int backcolor, [out] int textalignment);
+[native] int IsPlayerObjectNoCameraCol(int playerid, int objectid);
+[native] int GetPlayerSurfingPlayerObjectID(int playerid);
+[native] int GetPlayerCameraTargetPlayerObj(int playerid);
+[native] int GetObjectType(int playerid, int objectid);
+
+// special - for attached objects
+[native] int GetPlayerAttachedObject(int playerid, int index, [out] int modelid, [out] int bone, [out] float fX, [out] float fY, [out] float fZ, [out] float fRotX, [out] float fRotY, [out] float fRotZ, [out] float fSacleX, [out] float fScaleY, [out] float fScaleZ, [out] int materialcolor1, [out] int materialcolor2);
+[native] int AttachPlayerObjectToObject(int playerid, int objectid, int attachtoid, float OffsetX, float OffsetY, float OffsetZ, float RotX, float RotY, float RotZ, int SyncRotation);
+
+// RakNet ban functions
+[native] int ClearBanList();
+[native] int IsBanned(string ipaddress);
+
+// RakNet
+[native] int SetTimeoutTime(int playerid, int time_ms);
+[native] int GetMTUSize();
+[native] int GetLocalIP(int index, string localip, int len);
+
+// Vehicle functions
+[native] int GetVehicleSpawnInfo(int vehicleid, [out] float fX, [out] float fY, [out] float fZ, [out] float fRot, [out] int color1, [out] int color2);
+[native] int SetVehicleSpawnInfo(int vehicleid, int modelid, float fX, float fY, float fZ, float fAngle, int color1, int color2, int respawntime, int interior);
+[native] int GetVehicleColor(int vehicleid, [out] int color1, [out] int color2);
+[native] int GetVehiclePaintjob(int vehicleid);
+[native] int GetVehicleInterior(int vehicleid);
+[native] int GetVehicleNumberPlate(int vehicleid, string plate, int len);
+[native] int SetVehicleRespawnDelay(int vehicleid, int delay);
+[native] int GetVehicleRespawnDelay(int vehicleid);
+[native] int SetVehicleOccupiedTick(int vehicleid, int ticks);
+[native] int GetVehicleOccupiedTick(int vehicleid); // GetTickCount() - GetVehicleOccupiedTick(vehicleid) = time passed since vehicle is occupied, in ms
+[native] int SetVehicleRespawnTick(int vehicleid, int ticks);
+[native] int GetVehicleRespawnTick(int vehicleid); // GetTickCount() - GetVehicleRespawnTick(vehicleid) = time passed since vehicle spawned, in ms
+[native] int GetVehicleLastDriver(int vehicleid);
+[native] int GetVehicleCab(int vehicleid);
+[native] int HasVehicleBeenOccupied(int vehicleid);
+[native] int SetVehicleBeenOccupied(int vehicleid, int occupied);
+[native] int IsVehicleOccupied(int vehicleid);
+[native] int IsVehicleDead(int vehicleid);
+
+// Gangzones - Global
+[native] int IsValidGangZone(int zoneid);
+[native] int IsPlayerInGangZone(int playerid, int zoneid);
+[native] int IsGangZoneVisibleForPlayer(int playerid, int zoneid);
+[native] int GangZoneGetColorForPlayer(int playerid, int zoneid);
+[native] int GangZoneGetFlashColorForPlayer(int playerid, int zoneid);
+[native] int IsGangZoneFlashingForPlayer(int playerid, int zoneid);
+[native] int GangZoneGetPos(int zoneid, [out] float fMinX, [out] float fMinY, [out] float fMaxX, [out] float fMaxY);
+
+// Gangzones - Player
+[native] int CreatePlayerGangZone(int playerid, float minx, float miny, float maxx, float maxy);
+[native] int PlayerGangZoneDestroy(int playerid, int zoneid);
+[native] int PlayerGangZoneShow(int playerid, int zoneid, int color);
+[native] int PlayerGangZoneHide(int playerid, int zoneid);
+[native] int PlayerGangZoneFlash(int playerid, int zoneid, int color);
+[native] int PlayerGangZoneStopFlash(int playerid, int zoneid);
+[native] int IsValidPlayerGangZone(int playerid, int zoneid);
+[native] int IsPlayerInPlayerGangZone(int playerid, int zoneid);
+[native] int IsPlayerGangZoneVisible(int playerid, int zoneid);
+[native] int PlayerGangZoneGetColor(int playerid, int zoneid);
+[native] int PlayerGangZoneGetFlashColor(int playerid, int zoneid);
+[native] int IsPlayerGangZoneFlashing(int playerid, int zoneid);
+[native] int PlayerGangZoneGetPos(int playerid, int zoneid, [out] float fMinX, [out] float fMinY, [out] float fMaxX, [out] float fMaxY);
+
+// Textdraw - Global
+[native] int IsValidTextDraw(int textdrawid);
+[native] int IsTextDrawVisibleForPlayer(int playerid, int textdrawid);
+[native] int TextDrawGetString(int textdrawid, [out] string text, int len);
+[native] int TextDrawSetPos(int textdrawid, float fX, float fY); // You can change textdraw pos with it, but you need to use TextDrawShowForPlayer() after that
+[native] int TextDrawGetLetterSize(int textdrawid, [out] float fX, [out] float fY);
+[native] int TextDrawGetFontSize(int textdrawid, [out] float fX, [out] float fY);
+[native] int TextDrawGetPos(int textdrawid, [out] float fX, [out] float fY);
+[native] int TextDrawGetColor(int textdrawid);
+[native] int TextDrawGetBoxColor(int textdrawid);
+[native] int TextDrawGetBackgroundColor(int textdrawid);
+[native] int TextDrawGetShadow(int textdrawid);
+[native] int TextDrawGetOutline(int textdrawid);
+[native] int TextDrawGetFont(int textdrawid);
+[native] int TextDrawIsBox(int textdrawid);
+[native] int TextDrawIsProportional(int textdrawid);
+[native] int TextDrawIsSelectable(int textdrawid);
+[native] int TextDrawGetAlignment(int textdrawid);
+[native] int TextDrawGetPreviewModel(int textdrawid);
+[native] int TextDrawGetPreviewRot(int textdrawid, [out] float fRotX, [out] float fRotY, [out] float fRotZ, [out] float fZoom);
+[native] int TextDrawGetPreviewVehCol(int textdrawid, [out] int color1, [out] int color2);
+
+// Textdraw - Player
+[native] int IsValidPlayerTextDraw(int playerid, int textdrawid);
+[native] int IsPlayerTextDrawVisible(int playerid, int textdrawid);
+[native] int PlayerTextDrawGetString(int playerid, int textdrawid, [out] string text, int len);
+[native] int PlayerTextDrawSetPos(int playerid, int textdrawid, float fX, float fY);
+[native] int PlayerTextDrawGetLetterSize(int playerid, int textdrawid, [out] float fX, [out] float fY);
+[native] int PlayerTextDrawGetFontSize(int playerid, int textdrawid, [out] float fX, [out] float fY);
+[native] int PlayerTextDrawGetPos(int playerid, int textdrawid, [out] float fX, [out] float fY);
+[native] int PlayerTextDrawGetColor(int playerid, int textdrawid);
+[native] int PlayerTextDrawGetBoxColor(int playerid, int textdrawid);
+[native] int PlayerTextDrawGetBackgroundCol(int playerid, int textdrawid);
+[native] int PlayerTextDrawGetShadow(int playerid, int textdrawid);
+[native] int PlayerTextDrawGetOutline(int playerid, int textdrawid);
+[native] int PlayerTextDrawGetFont(int playerid, int textdrawid);
+[native] int PlayerTextDrawIsBox(int playerid, int textdrawid);
+[native] int PlayerTextDrawIsProportional(int playerid, int textdrawid);
+[native] int PlayerTextDrawIsSelectable(int playerid, int textdrawid);
+[native] int PlayerTextDrawGetAlignment(int playerid, int textdrawid);
+[native] int PlayerTextDrawGetPreviewModel(int playerid, int textdrawid);
+[native] int PlayerTextDrawGetPreviewRot(int playerid, int textdrawid, [out] float fRotX, [out] float fRotY, [out] float fRotZ, [out] float fZoom);
+[native] int PlayerTextDrawGetPreviewVehCol(int playerid, int textdrawid, [out] int color1, [out] int color2);
+
+// 3D Text - Global
+[native] int IsValid3DTextLabel(int id);
+[native] int Is3DTextLabelStreamedIn(int playerid, int id);
+[native] int Get3DTextLabelText(int id, [out] string text, int len);
+[native] int Get3DTextLabelColor(int id);
+[native] int Get3DTextLabelPos(int id, [out] float fX, [out] float fY, [out] float fZ);
+[native] float Get3DTextLabelDrawDistance(int id);
+[native] int Get3DTextLabelLOS(int id);
+[native] int Get3DTextLabelVirtualWorld(int id);
+[native] int Get3DTextLabelAttachedData(int id, [out] int attached_playerid, [out] int attached_vehicleid);
+
+// 3D Text - Player
+[native] int IsValidPlayer3DTextLabel(int playerid, int id);
+[native] int GetPlayer3DTextLabelText(int playerid, int id, [out] string text, int len);
+[native] int GetPlayer3DTextLabelColor(int playerid, int id);
+[native] int GetPlayer3DTextLabelPos(int playerid, int id, [out] float fX, [out] float fY, [out] float fZ);
+[native] float GetPlayer3DTextLabelDrawDist(int playerid, [out] float id);
+[native] int GetPlayer3DTextLabelLOS(int playerid, int id);
+[native] int GetPlayer3DTextLabelVirtualW(int playerid, int id);
+[native] int GetPlayer3DTextLabelAttached(int playerid, int id, [out] int attached_playerid, [out] int attached_vehicleid);
+
+// Menu
+[native] int IsMenuDisabled(int menuid);
+[native] int IsMenuRowDisabled(int menuid, int row);
+[native] int GetMenuColumns(int menuid);
+[native] int GetMenuItems(int menuid, int column);
+[native] int GetMenuPos(int menuid, [out] float fX, [out] float fY);
+[native] int GetMenuColumnWidth(int menuid, [out] float fColumn1, [out] float fColumn2);
+[native] int GetMenuColumnHeader(int menuid, int column, [out] string header, int len);
+[native] int GetMenuItem(int menuid, int column, int itemid, [out] string item, int len);
+
+// Pickups - Global
+[native] int IsValidPickup(int pickupid);
+[native] int IsPickupStreamedIn(int playerid, int pickupid);
+[native] int GetPickupPos(int pickupid, [out] float fX, [out] float fY, [out] float fZ);
+[native] int GetPickupModel(int pickupid);
+[native] int GetPickupType(int pickupid);
+[native] int GetPickupVirtualWorld(int pickupid);
+
+// Y_Less's model sizes inc
+[native] int GetColCount();
+[native] float GetColSphereRadius(int modelid);
+[native] int GetColSphereOffset(int modelid, [out] float fX, [out] float fY, [out] float fZ);
+
+// Callbacks
+[callback] int OnPlayerEnterGangZone(int playerid, int zoneid);
+[callback] int OnPlayerLeaveGangZone(int playerid, int zoneid);
+[callback] int OnPlayerEnterPlayerGangZone(int playerid, int zoneid);
+[callback] int OnPlayerLeavePlayerGangZone(int playerid, int zoneid);
+[callback] int OnPlayerPickUpPlayerPickup(int playerid, int pickupid);
+[callback] int OnPlayerPauseStateChange(int playerid, int pausestate);
+[callback] int OnPlayerStatsAndWeaponsUpdate(int playerid);
+[callback] int OnRemoteRCONPacket(string ipaddr, int port, string password, int success, string command);
+[callback] int OnServerMessage(string msg);
+
+[native] int GetWeather();
+[native] int GetWeaponSlot(int weaponid);
+
+
+
+
+
+
+
+
